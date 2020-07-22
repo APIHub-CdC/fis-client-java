@@ -138,42 +138,70 @@ key_password=your_super_secure_password
 ```
 ### Paso 5. Modificar URL y datos de petición
 
-En el archivo ApiTest.java, que se encuentra en ***src/test/java/io/fis/client/api/***. Se deberán modificar los datos de la petición y de la URL para el consumo de la API en setBasePath("the_url"), como se muestra en el siguiente fragmento de código con los datos correspondientes:
+En el archivo ApiTest.java, que se encuentra en ***src/test/java/io/fis/mx/client/api/***. Se deberán modificar los datos de la petición y de la URL para el consumo de la API en setBasePath("the_url"), como se muestra en el siguiente fragmento de código con los datos correspondientes:
 
 > **NOTA:** Los datos de la siguiente petición son solo representativos.
 
 ```java
 public class ApiTest {
     
-    private Logger logger = LoggerFactory.getLogger(ApiTest.class.getName());
-    private final ReporteCreditoPeruApi api = new ReporteCreditoPeruApi();
-    private ApiClient apiClient = null;
+private Logger logger = LoggerFactory.getLogger(ApiTest.class.getName());
 
-    private String xApiKey = "your_api_key";
-    private String username = "your_username";
-    private String password = "your_password";
+private final FinancialInclusionScoreApi api = new FinancialInclusionScoreApi();
+private final SignerInterceptor interceptor = new SignerInterceptor();
+private ApiClient apiClient = null;
 
-    @Before()
-    public void setUp() {
-        this.apiClient = api.getApiClient();
-        this.apiClient.setBasePath("the_url");
-        OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
-                .readTimeout(30, TimeUnit.SECONDS)
-                .addInterceptor(new SignerInterceptor())
-                .build();
-        apiClient.setHttpClient(okHttpClient);
-    }
+private String xApiKey = "your_api_key";
+private String username = "your_username";
+private String password = "your_password";  
     
-    @Test
-    public void getFISTest() throws ApiException {
-        // TO DO
-        try {
-            // TO DO
-        }catch (ApiException e) {
-            // TO DO
-        }
-        
-    }
+@Before()
+public void setUp() {
+    this.apiClient = api.getApiClient();
+    this.apiClient.setBasePath("the_url");
+    OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
+            .readTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor(new SignerInterceptor())
+            .build();
+    apiClient.setHttpClient(okHttpClient);
+}
+
+@Test
+public void getScoreNoHitDGTest() throws ApiException {
+    
+    DomicilioPeticion domicilio = new DomicilioPeticion();
+    domicilio.setDireccion(null);
+    domicilio.setColoniaPoblacion(null);
+    domicilio.setDelegacionMunicipio(null);
+    domicilio.setCiudad(null);
+    domicilio.setEstado(CatalogoEstados.CDMX);
+    domicilio.setCP(null);
+    domicilio.setFechaResidencia(null);
+    domicilio.setNumeroTelefono(null);
+    domicilio.setTipoDomicilio(CatalogoTipoDomicilio.C);
+    domicilio.setTipoAsentamiento(CatalogoTipoAsentamiento._1);
+    
+    PersonaPeticion persona = new PersonaPeticion();
+    persona.setPrimerNombre("NOMBRE");
+    persona.setSegundoNombre(null);
+    persona.setApellidoPaterno("PATERNO");
+    persona.setApellidoMaterno("MATERNO");
+    persona.setFechaNacimiento("27-06-1986");
+    persona.setResidencia(CatalogoResidencia.NUMBER_1);
+    persona.setEstadoCivil(CatalogoEstadoCivil.D);
+    persona.setSexo(CatalogoSexo.M);
+    persona.setDomicilio(domicilio);
+    
+    
+    try {
+        Respuesta response = api.getScoreNoHitDG(xApiKey, username, password, persona);
+        logger.info(response.toString());
+        Assert.assertTrue(response != null);
+    } catch (ApiException e) {
+        Errores errores = interceptor.getErrores();
+        logger.info(errores.toString());
+    }        
+}
     
 }
 
